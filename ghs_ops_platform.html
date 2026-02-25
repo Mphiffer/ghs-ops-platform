@@ -1,0 +1,1606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GHS Energy — Operations Platform</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&family=Open+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --blue:#3a9fd6; --blue-lt:#e8f4fb; --blue-md:#c8e6f5;
+  --black:#111; --dark:#1e2428; --grey:#4a5568; --grey-lt:#8a9ab0;
+  --border:#d4dde6; --bg:#f2f5f8; --white:#fff;
+  --green:#2e9e68; --green-lt:#e6f7ef; --red:#d94f4f; --red-lt:#fdeaea;
+  --amber:#e8a020; --amber-lt:#fdf3e3;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Open Sans',sans-serif;background:var(--bg);color:var(--dark);min-height:100vh;font-size:14px;}
+
+/* ── LAYOUT ── */
+.app{display:flex;flex-direction:column;height:100vh;}
+.topbar{background:var(--black);height:60px;display:flex;align-items:center;justify-content:space-between;padding:0 24px;flex-shrink:0;z-index:200;}
+.accent-line{height:3px;background:linear-gradient(90deg,var(--blue),#6dbee8);flex-shrink:0;}
+.main-layout{display:flex;flex:1;overflow:hidden;}
+.sidebar{width:220px;background:var(--dark);flex-shrink:0;display:flex;flex-direction:column;overflow-y:auto;}
+.content{flex:1;overflow-y:auto;padding:28px;}
+
+/* ── TOPBAR ── */
+.logo-wrap{display:flex;align-items:center;gap:12px;}
+.logo-box{width:36px;height:36px;background:var(--blue);border-radius:4px;display:flex;align-items:center;justify-content:center;font-family:'Montserrat',sans-serif;font-weight:900;font-size:14px;color:#fff;letter-spacing:-1px;}
+.logo-name{font-family:'Montserrat',sans-serif;font-weight:800;font-size:15px;letter-spacing:2px;text-transform:uppercase;color:#fff;}
+.logo-sub{font-size:9px;letter-spacing:3px;color:var(--blue);font-weight:600;text-transform:uppercase;}
+.topbar-right{display:flex;align-items:center;gap:16px;}
+.top-date{font-size:11px;color:var(--grey-lt);letter-spacing:1px;text-transform:uppercase;}
+.btn{padding:7px 16px;border-radius:4px;font-family:'Montserrat',sans-serif;font-weight:700;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;border:none;transition:all .2s;}
+.btn-blue{background:var(--blue);color:#fff;}
+.btn-blue:hover{background:#2d8bbf;}
+.btn-outline{background:transparent;color:var(--grey-lt);border:1px solid #3a4550;}
+.btn-outline:hover{border-color:var(--blue);color:var(--blue);}
+.btn-sm{padding:5px 12px;font-size:10px;}
+.btn-green{background:var(--green);color:#fff;}
+.btn-green:hover{background:#268a5a;}
+.btn-red{background:var(--red);color:#fff;}
+.btn-danger{background:transparent;color:var(--red);border:1px solid var(--red);}
+.btn-danger:hover{background:var(--red);color:#fff;}
+
+/* ── SIDEBAR ── */
+.sidebar-section{padding:20px 16px 8px;font-family:'Montserrat',sans-serif;font-size:9px;letter-spacing:2.5px;text-transform:uppercase;color:#3a4d5c;font-weight:700;}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 16px;color:#7a8fa6;cursor:pointer;transition:all .15s;font-size:13px;font-weight:500;border-left:3px solid transparent;}
+.nav-item:hover{color:#fff;background:rgba(255,255,255,0.05);}
+.nav-item.active{color:var(--blue);border-left-color:var(--blue);background:rgba(58,159,214,0.08);}
+.nav-icon{font-size:16px;width:20px;text-align:center;}
+
+/* ── PAGES ── */
+.page{display:none;animation:fadeIn .2s ease;}
+.page.active{display:block;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── HEADINGS ── */
+.page-title{font-family:'Montserrat',sans-serif;font-weight:900;font-size:20px;letter-spacing:1px;text-transform:uppercase;color:var(--black);margin-bottom:6px;}
+.page-sub{font-size:12px;color:var(--grey-lt);margin-bottom:24px;}
+
+/* ── STAT CARDS ── */
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px;}
+.stat-card{background:var(--white);border:1px solid var(--border);border-radius:6px;padding:18px 20px;position:relative;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.05);}
+.stat-card::after{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--blue);}
+.stat-card.s-grey::after{background:var(--grey-lt);}
+.stat-card.s-green::after{background:var(--green);}
+.stat-card.s-dark::after{background:var(--dark);}
+.stat-card.s-amber::after{background:var(--amber);}
+.stat-label{font-family:'Montserrat',sans-serif;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--grey-lt);margin-bottom:8px;font-weight:700;}
+.stat-val{font-family:'Montserrat',sans-serif;font-size:30px;font-weight:900;color:var(--black);line-height:1;}
+.stat-sub{font-size:11px;color:var(--grey-lt);margin-top:5px;}
+
+/* ── SECTION ── */
+.sec-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.sec-title{font-family:'Montserrat',sans-serif;font-weight:900;font-size:13px;letter-spacing:2px;text-transform:uppercase;color:var(--black);display:flex;align-items:center;gap:8px;}
+.sec-title::before{content:'';display:block;width:3px;height:16px;background:var(--blue);border-radius:2px;}
+.filters{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:16px;}
+.filter-btn{padding:5px 14px;border-radius:20px;font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer;border:1px solid var(--border);background:var(--white);color:var(--grey-lt);transition:all .15s;}
+.filter-btn:hover{border-color:var(--blue);color:var(--blue);}
+.filter-btn.active{background:var(--blue);color:#fff;border-color:var(--blue);}
+.search-input{background:var(--white);border:1px solid var(--border);color:var(--dark);padding:7px 14px;border-radius:4px;font-family:'Open Sans',sans-serif;font-size:12px;outline:none;transition:border-color .2s,box-shadow .2s;min-width:200px;}
+.search-input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(58,159,214,.1);}
+.search-input::placeholder{color:var(--grey-lt);}
+
+/* ── TABLE ── */
+.tbl-wrap{background:var(--white);border:1px solid var(--border);border-radius:6px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.05);margin-bottom:24px;}
+table{width:100%;border-collapse:collapse;}
+thead{background:var(--dark);}
+th{font-family:'Montserrat',sans-serif;font-weight:700;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.5);padding:11px 16px;text-align:left;cursor:pointer;user-select:none;white-space:nowrap;transition:color .15s;}
+th:hover{color:#fff;}
+td{padding:12px 16px;font-size:13px;border-bottom:1px solid var(--border);vertical-align:middle;}
+tr:last-child td{border-bottom:none;}
+tbody tr{cursor:pointer;transition:background .1s;}
+tbody tr:hover{background:var(--blue-lt);}
+.cell-name{font-family:'Montserrat',sans-serif;font-weight:700;font-size:13px;color:var(--black);}
+.cell-muted{color:var(--grey-lt);font-size:12px;}
+
+/* ── BADGES ── */
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:3px;font-family:'Montserrat',sans-serif;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;}
+.b-active{background:var(--green-lt);color:var(--green);border:1px solid rgba(46,158,104,.25);}
+.b-upcoming{background:var(--amber-lt);color:var(--amber);border:1px solid rgba(232,160,32,.25);}
+.b-complete{background:var(--blue-lt);color:var(--blue);border:1px solid var(--blue-md);}
+.b-production{background:#f0f4ff;color:#5070cc;border:1px solid #c8d4f5;}
+.b-completions{background:#f5f0ff;color:#7050cc;border:1px solid #d4c8f5;}
+.b-pumper{background:#f0fff5;color:#309960;border:1px solid #c8f0d8;}
+.b-w2{background:var(--blue-lt);color:var(--blue);border:1px solid var(--blue-md);}
+.b-contractor{background:var(--amber-lt);color:var(--amber);border:1px solid rgba(232,160,32,.25);}
+.b-owned{background:var(--green-lt);color:var(--green);border:1px solid rgba(46,158,104,.25);}
+.b-third{background:var(--red-lt);color:var(--red);border:1px solid rgba(217,79,79,.25);}
+.b-dot{width:6px;height:6px;border-radius:50%;background:currentColor;display:inline-block;}
+
+/* ── AMOUNT ── */
+.amt{font-family:'Montserrat',sans-serif;font-weight:800;font-size:14px;}
+.amt-high{color:var(--blue);}
+.amt-mid{color:var(--dark);}
+.amt-low{color:var(--grey-lt);}
+
+/* ── MODAL ── */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:500;backdrop-filter:blur(2px);}
+.overlay.open{display:flex;align-items:center;justify-content:center;}
+.modal{background:var(--white);border-radius:8px;width:680px;max-width:95vw;max-height:90vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.25);animation:modalIn .22s ease;}
+.modal.modal-lg{width:860px;}
+.modal.modal-xl{width:1060px;}
+@keyframes modalIn{from{transform:scale(.95) translateY(10px);opacity:0}to{transform:scale(1) translateY(0);opacity:1}}
+.modal-hdr{background:var(--dark);padding:20px 24px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;position:relative;}
+.modal-hdr::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--blue);}
+.modal-title{font-family:'Montserrat',sans-serif;font-size:16px;font-weight:900;letter-spacing:1px;text-transform:uppercase;color:#fff;}
+.modal-close{background:rgba(255,255,255,.1);border:none;color:#fff;width:28px;height:28px;border-radius:4px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;transition:background .2s;}
+.modal-close:hover{background:var(--blue);}
+.modal-body{padding:24px;overflow-y:auto;flex:1;}
+.modal-foot{padding:16px 24px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:10px;flex-shrink:0;background:#fafbfc;}
+
+/* ── FORM ── */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.form-grid.cols3{grid-template-columns:1fr 1fr 1fr;}
+.form-group{display:flex;flex-direction:column;gap:5px;}
+.form-group.full{grid-column:1/-1;}
+label{font-family:'Montserrat',sans-serif;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--grey-lt);font-weight:700;}
+input,select,textarea{background:var(--bg);border:1px solid var(--border);color:var(--dark);padding:9px 12px;border-radius:4px;font-family:'Open Sans',sans-serif;font-size:13px;outline:none;transition:border-color .2s,box-shadow .2s;width:100%;}
+input:focus,select:focus,textarea:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(58,159,214,.1);}
+textarea{resize:vertical;min-height:80px;}
+.form-divider{grid-column:1/-1;height:1px;background:var(--border);margin:4px 0;}
+.form-section-title{grid-column:1/-1;font-family:'Montserrat',sans-serif;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--grey-lt);font-weight:700;padding-bottom:4px;border-bottom:1px solid var(--border);}
+
+/* ── TABS (inside modal) ── */
+.mtabs{display:flex;border-bottom:1px solid var(--border);margin-bottom:20px;}
+.mtab{padding:10px 18px;font-family:'Montserrat',sans-serif;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--grey-lt);cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;}
+.mtab:hover{color:var(--dark);}
+.mtab.active{color:var(--blue);border-bottom-color:var(--blue);}
+.mtab-page{display:none;}
+.mtab-page.active{display:block;}
+
+/* ── DAY ENTRY ── */
+.day-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin-bottom:20px;}
+.day-cell{background:var(--white);border:1px solid var(--border);border-radius:6px;padding:10px;cursor:pointer;transition:all .15s;position:relative;}
+.day-cell:hover{border-color:var(--blue);box-shadow:0 0 0 2px rgba(58,159,214,.15);}
+.day-cell.today{border-color:var(--blue);background:var(--blue-lt);}
+.day-cell.has-data::after{content:'';position:absolute;top:8px;right:8px;width:7px;height:7px;border-radius:50%;background:var(--green);}
+.day-label{font-family:'Montserrat',sans-serif;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--grey-lt);}
+.day-num{font-family:'Montserrat',sans-serif;font-size:22px;font-weight:900;color:var(--black);line-height:1.1;}
+.day-amt{font-family:'Montserrat',sans-serif;font-size:11px;font-weight:700;color:var(--blue);margin-top:4px;}
+
+/* ── LINE ITEM ROW ── */
+.li-row{display:grid;grid-template-columns:2fr 80px 100px 120px 110px 100px 36px;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);}
+.li-row:last-child{border-bottom:none;}
+.li-hdr{font-family:'Montserrat',sans-serif;font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--grey-lt);}
+.li-hdr-row{display:grid;grid-template-columns:2fr 80px 100px 120px 110px 100px 36px;gap:8px;padding:0 0 6px;border-bottom:2px solid var(--border);margin-bottom:4px;}
+.li-input{padding:6px 8px;font-size:12px;}
+.li-del{background:transparent;border:1px solid var(--border);color:var(--grey-lt);width:30px;height:30px;border-radius:4px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;transition:all .2s;}
+.li-del:hover{background:var(--red);border-color:var(--red);color:#fff;}
+
+/* ── PERSONNEL CARD ── */
+.person-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+.person-card{background:var(--white);border:1px solid var(--border);border-radius:6px;overflow:hidden;cursor:pointer;transition:all .15s;box-shadow:0 1px 3px rgba(0,0,0,.04);}
+.person-card:hover{border-color:var(--blue);box-shadow:0 4px 12px rgba(58,159,214,.15);}
+.person-card-hdr{background:var(--dark);padding:12px 14px;display:flex;align-items:center;gap:10px;}
+.person-avatar{width:34px;height:34px;border-radius:50%;background:var(--blue);display:flex;align-items:center;justify-content:center;font-family:'Montserrat',sans-serif;font-weight:900;font-size:13px;color:#fff;flex-shrink:0;}
+.person-name{font-family:'Montserrat',sans-serif;font-size:13px;font-weight:800;color:#fff;text-transform:uppercase;}
+.person-role{font-size:10px;color:var(--grey-lt);letter-spacing:.5px;}
+.person-body{padding:12px 14px;}
+.person-row{display:flex;justify-content:space-between;padding:5px 0;font-size:12px;border-bottom:1px solid var(--border);}
+.person-row:last-child{border-bottom:none;}
+.pr-k{color:var(--grey-lt);font-weight:500;}
+.pr-v{color:var(--dark);font-weight:600;}
+
+/* ── PRICE SHEET ── */
+.price-row{display:grid;grid-template-columns:2fr 100px 120px 140px 160px 40px;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);}
+.price-hdr-row{display:grid;grid-template-columns:2fr 100px 120px 140px 160px 40px;gap:8px;padding:0 0 8px;border-bottom:2px solid var(--border);margin-bottom:4px;}
+
+/* ── CHART ── */
+.chart-wrap{background:var(--white);border:1px solid var(--border);border-radius:6px;padding:24px;box-shadow:0 1px 3px rgba(0,0,0,.05);}
+.bar-chart{display:flex;align-items:flex-end;gap:12px;height:160px;padding-top:8px;}
+.bar-grp{display:flex;flex-direction:column;align-items:center;flex:1;gap:6px;cursor:pointer;}
+.bar{width:100%;border-radius:3px 3px 0 0;background:var(--blue);min-height:4px;transition:opacity .2s;}
+.bar-grp:hover .bar{opacity:.75;}
+.bar-top-lbl{font-family:'Montserrat',sans-serif;font-size:11px;font-weight:700;color:var(--grey-lt);}
+.bar-bot-lbl{font-size:10px;font-weight:600;color:var(--grey-lt);text-align:center;max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;width:100%;text-transform:uppercase;letter-spacing:.5px;}
+.pie-wrap{position:relative;width:200px;height:200px;margin:0 auto;}
+canvas{max-width:100%;}
+.pie-legend{display:flex;flex-direction:column;gap:8px;margin-top:16px;}
+.pie-leg-row{display:flex;align-items:center;gap:8px;font-size:12px;}
+.pie-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+
+/* ── DASHBOARD GRID ── */
+.dash-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;}
+.dash-card{background:var(--white);border:1px solid var(--border);border-radius:6px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,.05);}
+.dash-card-title{font-family:'Montserrat',sans-serif;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--grey-lt);margin-bottom:16px;}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:24px;right:24px;background:var(--dark);color:#fff;padding:12px 20px;border-radius:6px;font-size:13px;font-weight:500;z-index:9999;transform:translateY(80px);opacity:0;transition:all .3s;border-left:4px solid var(--blue);}
+.toast.show{transform:translateY(0);opacity:1;}
+.toast.error{border-left-color:var(--red);}
+.toast.success{border-left-color:var(--green);}
+
+/* ── EMPTY STATE ── */
+.empty{text-align:center;padding:60px 20px;color:var(--grey-lt);}
+.empty-icon{font-size:48px;margin-bottom:16px;opacity:.4;}
+.empty-text{font-family:'Montserrat',sans-serif;font-size:14px;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;}
+.empty-sub{font-size:12px;}
+
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+.three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;}
+hr.divider{border:none;border-top:1px solid var(--border);margin:16px 0;}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="logo-wrap">
+      <div class="logo-box">GHS</div>
+      <div>
+        <div class="logo-name">GHS Energy</div>
+        <div class="logo-sub">Operations Platform</div>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <div class="top-date" id="topDate"></div>
+      <button class="btn btn-outline btn-sm" onclick="exportData()">⬇ Export</button>
+      <button class="btn btn-blue btn-sm" onclick="showImport()">⬆ Import</button>
+    </div>
+  </div>
+  <div class="accent-line"></div>
+
+  <div class="main-layout">
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+      <div class="sidebar-section">Main</div>
+      <div class="nav-item active" onclick="navTo('dashboard',this)"><span class="nav-icon">📊</span> Dashboard</div>
+      <div class="nav-item" onclick="navTo('jobs',this)"><span class="nav-icon">🏗️</span> Jobs</div>
+      <div class="sidebar-section">Resources</div>
+      <div class="nav-item" onclick="navTo('personnel',this)"><span class="nav-icon">👷</span> Personnel</div>
+      <div class="nav-item" onclick="navTo('pricesheet',this)"><span class="nav-icon">💲</span> Price Sheet</div>
+      <div class="sidebar-section">Customers</div>
+      <div class="nav-item" onclick="navTo('customers',this)"><span class="nav-icon">🏢</span> Customers</div>
+    </div>
+
+    <!-- CONTENT -->
+    <div class="content">
+
+      <!-- ═══════════ DASHBOARD ═══════════ -->
+      <div id="page-dashboard" class="page active">
+        <div class="page-title">Company Dashboard</div>
+        <div class="page-sub" id="dashDate">Loading...</div>
+        <div class="stat-grid" id="dashStats">
+          <div class="stat-card"><div class="stat-label">Daily Invoiced</div><div class="stat-val" id="d-invoiced">$0</div><div class="stat-sub">Today's charges</div></div>
+          <div class="stat-card s-grey"><div class="stat-label">Daily Cost</div><div class="stat-val" id="d-cost">$0</div><div class="stat-sub">Labor + equipment</div></div>
+          <div class="stat-card s-green"><div class="stat-label">Personnel Out</div><div class="stat-val" id="d-personnel">0</div><div class="stat-sub">Active today</div></div>
+          <div class="stat-card s-dark"><div class="stat-label">Active Jobs</div><div class="stat-val" id="d-jobs">0</div><div class="stat-sub">Currently running</div></div>
+        </div>
+        <div class="dash-grid">
+          <div class="dash-card">
+            <div class="dash-card-title">Weekly Revenue by Job</div>
+            <div class="bar-chart" id="dashBarChart"><div class="empty" style="width:100%;align-items:center;display:flex;flex-direction:column;justify-content:center"><div class="empty-icon">📈</div><div class="empty-sub">No job data yet</div></div></div>
+          </div>
+          <div class="dash-card">
+            <div class="dash-card-title">Revenue by Customer</div>
+            <canvas id="pieCanvas" width="200" height="200"></canvas>
+            <div class="pie-legend" id="pieLegend"></div>
+          </div>
+        </div>
+        <div class="tbl-wrap">
+          <div style="padding:16px 16px 8px"><div class="sec-title">Active Jobs Summary</div></div>
+          <table><thead><tr><th>Job</th><th>Customer</th><th>Type</th><th>Today's Charges</th><th>Total to Date</th><th>Personnel</th><th>Status</th></tr></thead>
+          <tbody id="dashJobsBody"></tbody></table>
+        </div>
+      </div>
+
+      <!-- ═══════════ JOBS ═══════════ -->
+      <div id="page-jobs" class="page">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;">
+          <div><div class="page-title">Jobs</div><div class="page-sub">All job sites — click to open daily cost view</div></div>
+          <button class="btn btn-blue" onclick="openJobModal()">+ New Job</button>
+        </div>
+        <div class="filters" id="jobFilters">
+          <span style="font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--grey-lt);">Status:</span>
+          <div class="filter-btn active" data-filter-type="status" data-filter-val="all" onclick="setJobFilter('status','all',this)">All</div>
+          <div class="filter-btn" data-filter-type="status" data-filter-val="Active" onclick="setJobFilter('status','Active',this)">Active</div>
+          <div class="filter-btn" data-filter-type="status" data-filter-val="Upcoming" onclick="setJobFilter('status','Upcoming',this)">Upcoming</div>
+          <div class="filter-btn" data-filter-type="status" data-filter-val="Complete" onclick="setJobFilter('status','Complete',this)">Complete</div>
+          <span style="font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--grey-lt);margin-left:8px;">Type:</span>
+          <div class="filter-btn active" data-filter-type="type" data-filter-val="all" onclick="setJobFilter('type','all',this)">All</div>
+          <div class="filter-btn" data-filter-type="type" data-filter-val="Production" onclick="setJobFilter('type','Production',this)">Production</div>
+          <div class="filter-btn" data-filter-type="type" data-filter-val="Completions" onclick="setJobFilter('type','Completions',this)">Completions</div>
+          <div class="filter-btn" data-filter-type="type" data-filter-val="Pumper Routes" onclick="setJobFilter('type','Pumper Routes',this)">Pumper Routes</div>
+          <input class="search-input" placeholder="Search jobs or customer…" oninput="renderJobsTable()" id="jobSearch" style="margin-left:auto;">
+        </div>
+        <div class="tbl-wrap">
+          <table id="jobsTable">
+            <thead><tr><th>Job Site</th><th>Customer</th><th>Type</th><th>Status</th><th>Company Man</th><th>County</th><th>Start Date</th><th>Today's $</th><th>Total $</th></tr></thead>
+            <tbody id="jobsBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ═══════════ PERSONNEL ═══════════ -->
+      <div id="page-personnel" class="page">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;">
+          <div><div class="page-title">Personnel</div><div class="page-sub">All crew — click a card for full contact &amp; pay details</div></div>
+          <div style="display:flex;gap:8px;">
+            <button class="btn btn-outline" onclick="openPersonnelImport()">⬆ Mass Import</button>
+            <button class="btn btn-blue" onclick="openPersonModal()">+ Add Person</button>
+          </div>
+        </div>
+        <div class="filters">
+          <div class="filter-btn active" data-pf="all" onclick="setPFilter('all',this)">All</div>
+          <div class="filter-btn" data-pf="W-2" onclick="setPFilter('W-2',this)">W-2</div>
+          <div class="filter-btn" data-pf="Contractor" onclick="setPFilter('Contractor',this)">Contractor</div>
+          <input class="search-input" placeholder="Search name, role…" oninput="renderPersonnel()" id="personSearch" style="margin-left:auto;">
+        </div>
+        <div class="person-grid" id="personGrid"></div>
+      </div>
+
+      <!-- ═══════════ PRICE SHEET ═══════════ -->
+      <div id="page-pricesheet" class="page">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;">
+          <div><div class="page-title">Vendor Price Sheet</div><div class="page-sub">Master rate list — owned vs. third-party items</div></div>
+          <button class="btn btn-blue" onclick="openPriceModal()">+ Add Item</button>
+        </div>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>Item Name</th><th>Category</th><th>Daily Rate</th><th>Ownership</th><th>Vendor</th><th>Vendor Rate</th><th>Markup</th><th>Actions</th></tr></thead>
+            <tbody id="priceBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ═══════════ CUSTOMERS ═══════════ -->
+      <div id="page-customers" class="page">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;">
+          <div><div class="page-title">Customers</div><div class="page-sub">Client accounts &amp; job history</div></div>
+          <button class="btn btn-blue" onclick="openCustModal()">+ Add Customer</button>
+        </div>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>Customer</th><th>Contact</th><th>Phone</th><th>Email</th><th>Active Jobs</th><th>Total Revenue</th></tr></thead>
+            <tbody id="custBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div><!-- /content -->
+  </div><!-- /main-layout -->
+</div><!-- /app -->
+
+<!-- ═══════ OVERLAY ═══════ -->
+<div class="overlay" id="mainOverlay" onclick="closeAllModals()"></div>
+
+<!-- ═══════ JOB MODAL ═══════ -->
+<div class="modal modal-lg" id="jobModal" style="display:none;">
+  <div class="modal-hdr">
+    <div class="modal-title" id="jobModalTitle">New Job</div>
+    <button class="modal-close" onclick="closeModal('jobModal')">✕</button>
+  </div>
+  <div class="modal-body">
+    <div class="mtabs">
+      <div class="mtab active" onclick="switchMTab('job','info',this)">Job Info</div>
+      <div class="mtab" onclick="switchMTab('job','daily',this)">Daily Costs</div>
+      <div class="mtab" onclick="switchMTab('job','crew',this)">Crew</div>
+    </div>
+    <!-- Info -->
+    <div class="mtab-page active" id="job-tab-info">
+      <div class="form-grid">
+        <div class="form-group"><label>Job Name *</label><input id="j-name" placeholder="e.g. Holly CTB"></div>
+        <div class="form-group"><label>Customer *</label><select id="j-customer"><option value="">Select…</option></select></div>
+        <div class="form-group"><label>Job Type *</label><select id="j-type"><option value="">Select…</option><option>Production</option><option>Completions</option><option>Pumper Routes</option></select></div>
+        <div class="form-group"><label>Status *</label><select id="j-status"><option>Upcoming</option><option>Active</option><option>Complete</option></select></div>
+        <div class="form-group"><label>Company Man</label><input id="j-coman" placeholder="Name"></div>
+        <div class="form-group"><label>Company Man Email</label><input id="j-coemail" placeholder="email@company.com"></div>
+        <div class="form-group"><label>State</label><input id="j-state" value="Texas"></div>
+        <div class="form-group"><label>County</label><input id="j-county" placeholder="e.g. Reagan"></div>
+        <div class="form-group"><label>Start Date</label><input type="date" id="j-start"></div>
+        <div class="form-group"><label>End Date</label><input type="date" id="j-end"></div>
+        <div class="form-group"><label>Iron Vendor</label><input id="j-iron" placeholder="e.g. GHS Owned"></div>
+        <div class="form-group"><label>Tank Vendor</label><input id="j-tank" placeholder="e.g. N/A"></div>
+        <div class="form-group full"><label>Well Names (comma separated)</label><input id="j-wells" placeholder="e.g. Holly CTB, Well 2B"></div>
+        <div class="form-group full"><label>Notes</label><textarea id="j-notes" placeholder="Any additional notes…"></textarea></div>
+      </div>
+    </div>
+    <!-- Daily Costs -->
+    <div class="mtab-page" id="job-tab-daily">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+        <div style="font-family:'Montserrat',sans-serif;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--grey-lt);">Select a day to view/edit charges</div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn btn-outline btn-sm" onclick="prevWeek()">◀ Prev</button>
+          <span id="weekLabel" style="font-family:'Montserrat',sans-serif;font-size:12px;font-weight:700;color:var(--dark);line-height:28px;"></span>
+          <button class="btn btn-outline btn-sm" onclick="nextWeek()">Next ▶</button>
+        </div>
+      </div>
+      <div class="day-grid" id="dayGrid"></div>
+      <div id="dayEditor" style="display:none;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+          <div style="font-family:'Montserrat',sans-serif;font-size:13px;font-weight:700;color:var(--dark);" id="dayEditorTitle"></div>
+          <div style="display:flex;gap:8px;">
+            <button class="btn btn-outline btn-sm" onclick="addLineItemFromPrice()">+ From Price Sheet</button>
+            <button class="btn btn-outline btn-sm" onclick="addCustomLineItem()">+ Custom</button>
+          </div>
+        </div>
+        <div class="li-hdr-row">
+          <span class="li-hdr">Description</span>
+          <span class="li-hdr">Qty</span>
+          <span class="li-hdr">Rate</span>
+          <span class="li-hdr">Ownership</span>
+          <span class="li-hdr">Vendor / Notes</span>
+          <span class="li-hdr">Total</span>
+          <span></span>
+        </div>
+        <div id="dayLineItems"></div>
+        <div style="display:flex;justify-content:flex-end;margin-top:12px;padding-top:12px;border-top:1px solid var(--border);">
+          <div style="font-family:'Montserrat',sans-serif;font-weight:900;font-size:18px;color:var(--blue);">Daily Total: <span id="dayTotal">$0</span></div>
+        </div>
+        <div style="margin-top:10px;display:flex;gap:8px;justify-content:flex-end;">
+          <button class="btn btn-green btn-sm" onclick="saveDayEntries()">Save Day</button>
+        </div>
+      </div>
+    </div>
+    <!-- Crew -->
+    <div class="mtab-page" id="job-tab-crew">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+        <div class="sec-title">Assigned Crew</div>
+        <button class="btn btn-blue btn-sm" onclick="assignCrewModal()">+ Assign Person</button>
+      </div>
+      <div id="jobCrewList"></div>
+    </div>
+  </div>
+  <div class="modal-foot">
+    <button class="btn btn-outline" onclick="closeModal('jobModal')">Cancel</button>
+    <button class="btn btn-red btn-sm" id="jobDeleteBtn" style="display:none;" onclick="deleteCurrentJob()">Delete Job</button>
+    <button class="btn btn-blue" onclick="saveJob()">Save Job</button>
+  </div>
+</div>
+
+<!-- ═══════ PERSON MODAL ═══════ -->
+<div class="modal" id="personModal" style="display:none;">
+  <div class="modal-hdr">
+    <div class="modal-title" id="personModalTitle">Add Person</div>
+    <button class="modal-close" onclick="closeModal('personModal')">✕</button>
+  </div>
+  <div class="modal-body">
+    <div class="form-grid">
+      <div class="form-group"><label>First Name *</label><input id="p-first" placeholder="First"></div>
+      <div class="form-group"><label>Last Name *</label><input id="p-last" placeholder="Last"></div>
+      <div class="form-group"><label>Role / Title</label><input id="p-role" placeholder="e.g. Day Hand, Floater"></div>
+      <div class="form-group"><label>Phone</label><input id="p-phone" placeholder="(432) 555-0000"></div>
+      <div class="form-group"><label>Email</label><input id="p-email" placeholder="email@example.com"></div>
+      <div class="form-group"><label>Employment Type *</label>
+        <select id="p-emptype" onchange="toggleEmpFields()">
+          <option value="">Select…</option>
+          <option>W-2</option>
+          <option>Contractor</option>
+        </select>
+      </div>
+      <!-- W-2 fields -->
+      <div class="form-group" id="pf-hourly"><label>Hourly Rate ($)</label><input type="number" id="p-hourly" placeholder="0.00"></div>
+      <div class="form-group" id="pf-perdiem"><label>Per Diem Type</label><select id="p-perdiem"><option value="">Select…</option><option>Man Camp</option><option>Camper</option><option>None</option></select></div>
+      <div class="form-group" id="pf-perdiemamt"><label>Per Diem Amount ($/day)</label><input type="number" id="p-perdiemamt" placeholder="0.00"></div>
+      <!-- Contractor fields -->
+      <div class="form-group" id="pf-daily"><label>Daily Pay Rate ($)</label><input type="number" id="p-daily" placeholder="0.00"></div>
+      <div class="form-group" id="pf-agency"><label>Billing Agency *</label>
+        <select id="p-agency">
+          <option value="">Select…</option>
+          <option>Longhorn</option>
+          <option>Blackflag</option>
+          <option>Rigup</option>
+          <option>Direct</option>
+        </select>
+      </div>
+      <div class="form-group full"><label>Emergency Contact</label><input id="p-emergency" placeholder="Name / Phone"></div>
+      <div class="form-group full"><label>Notes</label><textarea id="p-notes" placeholder="Certifications, notes…"></textarea></div>
+    </div>
+  </div>
+  <div class="modal-foot">
+    <button class="btn btn-outline" onclick="closeModal('personModal')">Cancel</button>
+    <button class="btn btn-danger btn-sm" id="personDeleteBtn" style="display:none;" onclick="deleteCurrentPerson()">Delete</button>
+    <button class="btn btn-blue" onclick="savePerson()">Save</button>
+  </div>
+</div>
+
+<!-- ═══════ PRICE MODAL ═══════ -->
+<div class="modal" id="priceModal" style="display:none;">
+  <div class="modal-hdr">
+    <div class="modal-title" id="priceModalTitle">Add Price Item</div>
+    <button class="modal-close" onclick="closeModal('priceModal')">✕</button>
+  </div>
+  <div class="modal-body">
+    <div class="form-grid">
+      <div class="form-group"><label>Item Name *</label><input id="pr-name" placeholder="e.g. Day Hand"></div>
+      <div class="form-group"><label>Category</label><select id="pr-cat"><option>Labor</option><option>Equipment</option><option>Trucking</option><option>Consumables</option><option>Other</option></select></div>
+      <div class="form-group"><label>Daily Rate ($) *</label><input type="number" id="pr-rate" placeholder="0.00"></div>
+      <div class="form-group"><label>Ownership</label><select id="pr-own" onchange="togglePriceVendor()"><option>Owned</option><option>Third Party</option></select></div>
+      <div class="form-group" id="prf-vendor"><label>Vendor Name</label><input id="pr-vendor" placeholder="Vendor company"></div>
+      <div class="form-group" id="prf-vrate"><label>Vendor Rate ($)</label><input type="number" id="pr-vrate" placeholder="0.00"></div>
+      <div class="form-group full"><label>Notes</label><input id="pr-notes" placeholder="Any notes…"></div>
+    </div>
+  </div>
+  <div class="modal-foot">
+    <button class="btn btn-outline" onclick="closeModal('priceModal')">Cancel</button>
+    <button class="btn btn-danger btn-sm" id="priceDeleteBtn" style="display:none;" onclick="deleteCurrentPrice()">Delete</button>
+    <button class="btn btn-blue" onclick="savePrice()">Save</button>
+  </div>
+</div>
+
+<!-- ═══════ CUSTOMER MODAL ═══════ -->
+<div class="modal" id="custModal" style="display:none;">
+  <div class="modal-hdr">
+    <div class="modal-title" id="custModalTitle">Add Customer</div>
+    <button class="modal-close" onclick="closeModal('custModal')">✕</button>
+  </div>
+  <div class="modal-body">
+    <div class="form-grid">
+      <div class="form-group"><label>Company Name *</label><input id="c-name" placeholder="e.g. Civitas Resources"></div>
+      <div class="form-group"><label>Contact Name</label><input id="c-contact" placeholder="Full name"></div>
+      <div class="form-group"><label>Phone</label><input id="c-phone" placeholder="(432) 555-0000"></div>
+      <div class="form-group"><label>Email</label><input id="c-email" placeholder="contact@company.com"></div>
+      <div class="form-group full"><label>Address</label><input id="c-addr" placeholder="Street, City, State ZIP"></div>
+      <div class="form-group full"><label>Notes</label><textarea id="c-notes" placeholder="Notes…"></textarea></div>
+    </div>
+  </div>
+  <div class="modal-foot">
+    <button class="btn btn-outline" onclick="closeModal('custModal')">Cancel</button>
+    <button class="btn btn-danger btn-sm" id="custDeleteBtn" style="display:none;" onclick="deleteCurrentCust()">Delete</button>
+    <button class="btn btn-blue" onclick="saveCust()">Save</button>
+  </div>
+</div>
+
+<!-- ═══════ ASSIGN CREW MODAL ═══════ -->
+<div class="modal" id="assignModal" style="display:none;">
+  <div class="modal-hdr">
+    <div class="modal-title">Assign Personnel</div>
+    <button class="modal-close" onclick="closeModal('assignModal')">✕</button>
+  </div>
+  <div class="modal-body">
+    <input class="search-input" placeholder="Search personnel…" oninput="renderAssignList(this.value)" id="assignSearch" style="margin-bottom:14px;width:100%;">
+    <div id="assignList" style="max-height:400px;overflow-y:auto;"></div>
+  </div>
+  <div class="modal-foot">
+    <button class="btn btn-outline" onclick="closeModal('assignModal')">Done</button>
+  </div>
+</div>
+
+<!-- ═══════ PRICE PICKER MODAL ═══════ -->
+<div class="modal" id="pricePickModal" style="display:none;">
+  <div class="modal-hdr">
+    <div class="modal-title">Select Price Sheet Item</div>
+    <button class="modal-close" onclick="closeModal('pricePickModal')">✕</button>
+  </div>
+  <div class="modal-body">
+    <input class="search-input" placeholder="Search items…" oninput="renderPricePicker(this.value)" id="pricePickSearch" style="margin-bottom:14px;width:100%;">
+    <div id="pricePickList" style="max-height:400px;overflow-y:auto;"></div>
+  </div>
+  <div class="modal-foot">
+    <button class="btn btn-outline" onclick="closeModal('pricePickModal')">Cancel</button>
+  </div>
+</div>
+
+<!-- ═══════ PERSONNEL IMPORT MODAL ═══════ -->
+<div class="modal" id="importModal" style="display:none;">
+  <div class="modal-hdr">
+    <div class="modal-title">Mass Import Personnel</div>
+    <button class="modal-close" onclick="closeModal('importModal')">✕</button>
+  </div>
+  <div class="modal-body">
+    <p style="font-size:13px;color:var(--grey);margin-bottom:16px;">Paste spreadsheet data (CSV or tab-separated) with columns: <strong>First, Last, Role, Phone, Email, Type (W-2/Contractor), Rate, Agency</strong></p>
+    <div class="form-group full"><label>Paste Data</label><textarea id="importData" style="min-height:200px;font-family:monospace;font-size:12px;" placeholder="First,Last,Role,Phone,Email,Type,Rate,Agency&#10;John,Smith,Day Hand,(432)555-0001,jsmith@email.com,W-2,18.50,&#10;Jane,Doe,Night Hand,(432)555-0002,jdoe@email.com,Contractor,980,Longhorn"></textarea></div>
+    <div id="importPreview" style="margin-top:12px;"></div>
+  </div>
+  <div class="modal-foot">
+    <button class="btn btn-outline" onclick="closeModal('importModal')">Cancel</button>
+    <button class="btn btn-blue" onclick="runImport()">Import</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ════════════════════════════════════
+//  STATE
+// ════════════════════════════════════
+let DB = {
+  jobs: [],
+  personnel: [],
+  prices: [],
+  customers: [],
+  dailyEntries: {},   // key: "jobId_YYYY-MM-DD" => [{desc,qty,rate,ownership,vendor,vendorRate}]
+  jobCrew: {},        // key: jobId => [personId...]
+};
+
+let editingJobId = null;
+let editingPersonId = null;
+let editingPriceId = null;
+let editingCustId = null;
+let currentDayDate = null;
+let currentWeekStart = null;
+let jobFilters = { status: 'all', type: 'all' };
+let personFilter = 'all';
+
+const COLORS = ['#3a9fd6','#2e9e68','#e8a020','#d94f4f','#9b59b6','#1abc9c','#e67e22','#3498db'];
+
+// ════════════════════════════════════
+//  PERSISTENCE
+// ════════════════════════════════════
+function saveDB() {
+  try { localStorage.setItem('ghsOpsDB', JSON.stringify(DB)); } catch(e){}
+}
+
+function loadDB() {
+  try {
+    const raw = localStorage.getItem('ghsOpsDB');
+    if (raw) { const d = JSON.parse(raw); Object.assign(DB, d); }
+  } catch(e){}
+}
+
+// ════════════════════════════════════
+//  INIT
+// ════════════════════════════════════
+function init() {
+  loadDB();
+  if (DB.customers.length === 0) seedData();
+  document.getElementById('topDate').textContent = new Date().toLocaleDateString('en-US',{weekday:'short',year:'numeric',month:'short',day:'numeric'});
+  document.getElementById('dashDate').textContent = 'As of ' + new Date().toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  renderAll();
+  scheduleAutoFill();
+}
+
+function seedData() {
+  // Seed customer
+  DB.customers = [
+    {id:'c1', name:'Civitas Resources', contact:'Various', phone:'', email:'', addr:'Midland, TX', notes:''}
+  ];
+  // Seed prices
+  DB.prices = [
+    {id:'pr1',name:'Day Hand',cat:'Labor',rate:1025,own:'Owned',vendor:'',vrate:0,notes:''},
+    {id:'pr2',name:'Night Hand',cat:'Labor',rate:1025,own:'Owned',vendor:'',vrate:0,notes:''},
+    {id:'pr3',name:'Floater',cat:'Labor',rate:1025,own:'Owned',vendor:'',vrate:0,notes:''},
+    {id:'pr4',name:'Rig Up',cat:'Labor',rate:1500,own:'Owned',vendor:'',vrate:0,notes:''},
+    {id:'pr5',name:'Rig Down',cat:'Labor',rate:1500,own:'Owned',vendor:'',vrate:0,notes:''},
+    {id:'pr6',name:'Flare and Iron',cat:'Equipment',rate:225,own:'Owned',vendor:'',vrate:0,notes:'per day'},
+    {id:'pr7',name:'2" Iron Package',cat:'Equipment',rate:200,own:'Owned',vendor:'',vrate:0,notes:''},
+    {id:'pr8',name:"SKO's",cat:'Equipment',rate:200,own:'Owned',vendor:'',vrate:0,notes:'each'},
+    {id:'pr9',name:'Light Tower',cat:'Equipment',rate:125,own:'Owned',vendor:'',vrate:0,notes:''},
+    {id:'pr10',name:'Command Center',cat:'Equipment',rate:105,own:'Owned',vendor:'',vrate:0,notes:''},
+    {id:'pr11',name:'Gas Busters',cat:'Equipment',rate:25,own:'Owned',vendor:'',vrate:0,notes:''},
+    {id:'pr12',name:'Consumables',cat:'Consumables',rate:165,own:'Owned',vendor:'',vrate:0,notes:''},
+    {id:'pr13',name:'3" 9 Valve Manifold',cat:'Equipment',rate:275,own:'Owned',vendor:'',vrate:0,notes:''},
+    {id:'pr14',name:'2" 5 Valve Manifold',cat:'Equipment',rate:225,own:'Owned',vendor:'',vrate:0,notes:''},
+    {id:'pr15',name:'T T & P John Combo',cat:'Equipment',rate:90,own:'Owned',vendor:'',vrate:0,notes:''},
+    {id:'pr16',name:'Setup & Delivery Combo Unit',cat:'Equipment',rate:150,own:'Owned',vendor:'',vrate:0,notes:''},
+    {id:'pr17',name:'Trucking - SKOs',cat:'Trucking',rate:1386,own:'Third Party',vendor:'4Pride',vrate:1260,notes:''},
+    {id:'pr18',name:'Trucking - Iron',cat:'Trucking',rate:1155,own:'Third Party',vendor:'4Pride',vrate:1050,notes:''},
+    {id:'pr19',name:'Wash Out & Repairs',cat:'Equipment',rate:2243,own:'Third Party',vendor:'HPR',vrate:1950,notes:''},
+  ];
+  // Seed jobs
+  DB.jobs = [
+    {id:'j1',name:'Holly CTB',customer:'c1',type:'Completions',status:'Active',coman:'Justin Sullivan',coemail:'Ssullivan@civiresources.com',state:'Texas',county:'Reagan',start:'2025-05-12',end:'',iron:'GHS Owned',tank:'N/A',wells:'Holly CTB',notes:''},
+    {id:'j2',name:'Moria Bag End',customer:'c1',type:'Completions',status:'Active',coman:'Jose Dominguez',coemail:'Jdominguez@civiresources.com',state:'Texas',county:'Reagan',start:'2025-10-09',end:'',iron:'GHS Owned',tank:'N/A',wells:'Moria Bag End',notes:''},
+    {id:'j3',name:'UL South 5 Well',customer:'c1',type:'Completions',status:'Active',coman:'Michael Cadena',coemail:'Mcadena@civiresources.com',state:'Texas',county:'Upton',start:'2026-02-11',end:'',iron:'GHS Owned',tank:'N/A',wells:'UL South 5 Well Pad',notes:''},
+    {id:'j4',name:'UL South 3 Well',customer:'c1',type:'Completions',status:'Complete',coman:'Michael Cadena',coemail:'Mcadena@civiresources.com',state:'Texas',county:'Upton',start:'2026-02-02',end:'2026-02-17',iron:'GHS Owned',tank:'N/A',wells:'UL South 3 Well Pad',notes:''},
+    {id:'j5',name:'Mary Rose',customer:'c1',type:'Production',status:'Active',coman:'Cody Denton',coemail:'Cdenton@civiresources.com',state:'Texas',county:'Upton',start:'2025-10-08',end:'',iron:'GHS Owned',tank:'N/A',wells:'Mary Rose',notes:''},
+    {id:'j6',name:'Pumping Route West',customer:'c1',type:'Pumper Routes',status:'Active',coman:'Cody Denton',coemail:'Cdenton@civiresources.com',state:'Texas',county:'Upton, Reagan',start:'2026-01-01',end:'',iron:'GHS Owned',tank:'N/A',wells:'University 35-19 CTB, Holly CTB, Mary Rose, Moria Bag End',notes:''},
+  ];
+  // Seed personnel
+  DB.personnel = [
+    {id:'p1',first:'Justin',last:'Sullivan',role:'Company Man',phone:'(432)555-0101',email:'Ssullivan@civiresources.com',emptype:'W-2',hourly:45,perdiem:'Man Camp',perdiemamt:75,daily:0,agency:'',emergency:'',notes:''},
+    {id:'p2',first:'Cody',last:'Denton',role:'Company Man',phone:'(432)555-0102',email:'Cdenton@civiresources.com',emptype:'W-2',hourly:45,perdiem:'Man Camp',perdiemamt:75,daily:0,agency:'',emergency:'',notes:''},
+    {id:'p3',first:'Jose',last:'Dominguez',role:'Company Man',phone:'(432)555-0103',email:'Jdominguez@civiresources.com',emptype:'W-2',hourly:45,perdiem:'Camper',perdiemamt:60,daily:0,agency:'',emergency:'',notes:''},
+    {id:'p4',first:'Michael',last:'Cadena',role:'Company Man',phone:'(432)555-0104',email:'Mcadena@civiresources.com',emptype:'W-2',hourly:45,perdiem:'Man Camp',perdiemamt:75,daily:0,agency:'',emergency:'',notes:''},
+    {id:'p5',first:'Blake',last:'Bautista',role:'Day Hand',phone:'(432)555-0201',email:'bbautista@email.com',emptype:'Contractor',hourly:0,perdiem:'',perdiemamt:0,daily:980,agency:'Longhorn',emergency:'',notes:''},
+    {id:'p6',first:'Danny',last:'Brockington',role:'Night Hand',phone:'(432)555-0202',email:'dbrockington@email.com',emptype:'Contractor',hourly:0,perdiem:'',perdiemamt:0,daily:980,agency:'Blackflag',emergency:'',notes:''},
+    {id:'p7',first:'Demarcus',last:'Taylor',role:'Day Hand',phone:'(432)555-0203',email:'dtaylor@email.com',emptype:'Contractor',hourly:0,perdiem:'',perdiemamt:0,daily:980,agency:'Longhorn',emergency:'',notes:''},
+  ];
+  // Seed job crew assignments
+  DB.jobCrew = { j1:['p1','p5','p6'], j2:['p3','p6'], j3:['p4','p5'], j4:['p4'], j5:['p2','p7'], j6:['p2'] };
+  // Seed sample daily entries for today
+  const today = todayStr();
+  DB.dailyEntries['j1_'+today] = [
+    {desc:'Day Hand',qty:1,rate:980,ownership:'Owned',vendor:'',vendorRate:0},
+    {desc:'Night Hand',qty:1,rate:980,ownership:'Owned',vendor:'',vendorRate:0},
+    {desc:'Flare and Iron',qty:1,rate:225,ownership:'Owned',vendor:'',vendorRate:0},
+    {desc:'Command Center',qty:1,rate:105,ownership:'Owned',vendor:'',vendorRate:0},
+  ];
+  DB.dailyEntries['j3_'+today] = [
+    {desc:'Day Hand',qty:1,rate:980,ownership:'Owned',vendor:'',vendorRate:0},
+    {desc:'Night Hand',qty:1,rate:980,ownership:'Owned',vendor:'',vendorRate:0},
+    {desc:'Floater',qty:1,rate:980,ownership:'Owned',vendor:'',vendorRate:0},
+    {desc:'Trucking - SKOs',qty:1,rate:1386,ownership:'Third Party',vendor:'4Pride',vendorRate:1260},
+  ];
+  saveDB();
+}
+
+// ════════════════════════════════════
+//  HELPERS
+// ════════════════════════════════════
+function uid() { return 'id_' + Math.random().toString(36).substr(2,9); }
+function todayStr() { return new Date().toISOString().split('T')[0]; }
+function fmt(n) { return '$' + (n||0).toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:0}); }
+function fmtK(n) { return n>=1000?'$'+(n/1000).toFixed(1)+'K':'$'+n; }
+function initials(p) { return ((p.first||'')[0]+(p.last||'')[0]).toUpperCase(); }
+function getCust(id) { return DB.customers.find(c=>c.id===id)||{name:'—'}; }
+function getPerson(id) { return DB.personnel.find(p=>p.id===id); }
+
+function toast(msg, type='') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast ' + type + ' show';
+  setTimeout(()=>t.classList.remove('show'), 3000);
+}
+
+function getJobDayTotal(jobId, dateStr) {
+  const key = jobId + '_' + dateStr;
+  const items = DB.dailyEntries[key] || [];
+  return items.reduce((s,i) => s + (parseFloat(i.qty)||1) * (parseFloat(i.rate)||0), 0);
+}
+
+function getJobTotalAll(jobId) {
+  let total = 0;
+  Object.keys(DB.dailyEntries).forEach(k => {
+    if (k.startsWith(jobId + '_')) {
+      total += (DB.dailyEntries[k]||[]).reduce((s,i) => s+(parseFloat(i.qty)||1)*(parseFloat(i.rate)||0),0);
+    }
+  });
+  return total;
+}
+
+function getJobCrewCount(jobId) { return (DB.jobCrew[jobId]||[]).length; }
+
+function statusBadge(s) {
+  const map = {Active:'b-active',Upcoming:'b-upcoming',Complete:'b-complete'};
+  return `<span class="badge ${map[s]||''}"><span class="b-dot"></span>${s}</span>`;
+}
+
+function typeBadge(t) {
+  const map = {Production:'b-production',Completions:'b-completions','Pumper Routes':'b-pumper'};
+  return `<span class="badge ${map[t]||''}">${t}</span>`;
+}
+
+// ════════════════════════════════════
+//  NAV
+// ════════════════════════════════════
+function navTo(page, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  el.classList.add('active');
+  if (page === 'dashboard') renderDashboard();
+  if (page === 'jobs') renderJobsTable();
+  if (page === 'personnel') renderPersonnel();
+  if (page === 'pricesheet') renderPriceSheet();
+  if (page === 'customers') renderCustomers();
+}
+
+// ════════════════════════════════════
+//  RENDER ALL
+// ════════════════════════════════════
+function renderAll() {
+  renderDashboard();
+  renderJobsTable();
+  renderPersonnel();
+  renderPriceSheet();
+  renderCustomers();
+}
+
+// ════════════════════════════════════
+//  DASHBOARD
+// ════════════════════════════════════
+function renderDashboard() {
+  const today = todayStr();
+  let dailyInv = 0, dailyCost = 0, personnelOut = new Set();
+  DB.jobs.filter(j=>j.status==='Active').forEach(j => {
+    dailyInv += getJobDayTotal(j.id, today);
+    (DB.jobCrew[j.id]||[]).forEach(pid => personnelOut.add(pid));
+    // cost = contractor daily rates for today's crew
+    (DB.jobCrew[j.id]||[]).forEach(pid => {
+      const p = getPerson(pid);
+      if (p && p.emptype === 'Contractor') dailyCost += parseFloat(p.daily)||0;
+      if (p && p.emptype === 'W-2') dailyCost += (parseFloat(p.hourly)||0) * 12; // ~12hr shift
+    });
+  });
+  document.getElementById('d-invoiced').textContent = fmtK(dailyInv);
+  document.getElementById('d-cost').textContent = fmtK(dailyCost);
+  document.getElementById('d-personnel').textContent = personnelOut.size;
+  document.getElementById('d-jobs').textContent = DB.jobs.filter(j=>j.status==='Active').length;
+
+  // Bar chart
+  const activeJobs = DB.jobs.filter(j=>j.status==='Active');
+  const maxT = Math.max(...activeJobs.map(j=>getJobTotalAll(j.id)), 1);
+  const bc = document.getElementById('dashBarChart');
+  if (activeJobs.length === 0) {
+    bc.innerHTML = '<div class="empty" style="width:100%;align-self:center;text-align:center;"><div class="empty-icon">📈</div><div class="empty-sub">No active jobs</div></div>';
+  } else {
+    bc.innerHTML = activeJobs.map(j => {
+      const t = getJobTotalAll(j.id);
+      const h = Math.max(6, Math.round((t/maxT)*130));
+      return `<div class="bar-grp" onclick="openJobFromDash('${j.id}')">
+        <div class="bar-top-lbl">${fmtK(t)}</div>
+        <div class="bar" style="height:${h}px"></div>
+        <div class="bar-bot-lbl">${j.name}</div>
+      </div>`;
+    }).join('');
+  }
+
+  // Pie chart
+  const custRevMap = {};
+  DB.jobs.forEach(j => {
+    const cust = getCust(j.customer).name;
+    custRevMap[cust] = (custRevMap[cust]||0) + getJobTotalAll(j.id);
+  });
+  drawPie(custRevMap);
+
+  // Active jobs table
+  const tbody = document.getElementById('dashJobsBody');
+  const activeAll = DB.jobs.filter(j=>j.status==='Active');
+  if (activeAll.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:30px;color:var(--grey-lt);">No active jobs</td></tr>';
+  } else {
+    tbody.innerHTML = activeAll.map(j => `<tr onclick="openJobFromDash('${j.id}')">
+      <td><span class="cell-name">${j.name}</span></td>
+      <td>${getCust(j.customer).name}</td>
+      <td>${typeBadge(j.type)}</td>
+      <td><span class="amt amt-high">${fmt(getJobDayTotal(j.id,today))}</span></td>
+      <td><span class="amt amt-mid">${fmt(getJobTotalAll(j.id))}</span></td>
+      <td>${getJobCrewCount(j.id)} crew</td>
+      <td>${statusBadge(j.status)}</td>
+    </tr>`).join('');
+  }
+}
+
+function openJobFromDash(id) {
+  const el = document.querySelector('[onclick="navTo(\'jobs\',this)"]') || document.querySelectorAll('.nav-item')[1];
+  navTo('jobs', el);
+  setTimeout(() => openJobModal(id), 100);
+}
+
+function drawPie(data) {
+  const canvas = document.getElementById('pieCanvas');
+  const ctx = canvas.getContext('2d');
+  canvas.width = 200; canvas.height = 200;
+  ctx.clearRect(0,0,200,200);
+  const entries = Object.entries(data).filter(([,v])=>v>0);
+  if (entries.length === 0) {
+    ctx.fillStyle = '#e2e8f0'; ctx.beginPath(); ctx.arc(100,100,90,0,Math.PI*2); ctx.fill();
+    document.getElementById('pieLegend').innerHTML = '<div style="font-size:12px;color:var(--grey-lt);text-align:center;">No data yet</div>';
+    return;
+  }
+  const total = entries.reduce((s,[,v])=>s+v,0);
+  let startAngle = -Math.PI/2;
+  entries.forEach(([name,val],i) => {
+    const slice = (val/total) * Math.PI * 2;
+    ctx.beginPath();
+    ctx.moveTo(100,100);
+    ctx.arc(100,100,90,startAngle,startAngle+slice);
+    ctx.closePath();
+    ctx.fillStyle = COLORS[i % COLORS.length];
+    ctx.fill();
+    ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke();
+    startAngle += slice;
+  });
+  // inner circle
+  ctx.beginPath(); ctx.arc(100,100,50,0,Math.PI*2);
+  ctx.fillStyle = '#fff'; ctx.fill();
+
+  document.getElementById('pieLegend').innerHTML = entries.map(([name,val],i) =>
+    `<div class="pie-leg-row"><div class="pie-dot" style="background:${COLORS[i%COLORS.length]}"></div><span style="flex:1">${name}</span><strong>${fmt(val)}</strong></div>`
+  ).join('');
+}
+
+// ════════════════════════════════════
+//  JOBS
+// ════════════════════════════════════
+function setJobFilter(type, val, el) {
+  jobFilters[type] = val;
+  document.querySelectorAll(`[data-filter-type="${type}"]`).forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  renderJobsTable();
+}
+
+function renderJobsTable() {
+  const q = (document.getElementById('jobSearch')?.value||'').toLowerCase();
+  let jobs = DB.jobs.filter(j => {
+    if (jobFilters.status !== 'all' && j.status !== jobFilters.status) return false;
+    if (jobFilters.type !== 'all' && j.type !== jobFilters.type) return false;
+    if (q && !j.name.toLowerCase().includes(q) && !getCust(j.customer).name.toLowerCase().includes(q)) return false;
+    return true;
+  });
+  const tbody = document.getElementById('jobsBody');
+  const today = todayStr();
+  if (jobs.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:40px;color:var(--grey-lt);">No jobs match filters</td></tr>';
+    return;
+  }
+  tbody.innerHTML = jobs.map(j => {
+    const dayT = getJobDayTotal(j.id, today);
+    const allT = getJobTotalAll(j.id);
+    return `<tr onclick="openJobModal('${j.id}')">
+      <td><span class="cell-name">${j.name}</span></td>
+      <td>${getCust(j.customer).name}</td>
+      <td>${typeBadge(j.type)}</td>
+      <td>${statusBadge(j.status)}</td>
+      <td>${j.coman||'—'}</td>
+      <td class="cell-muted">${j.county||'—'}</td>
+      <td class="cell-muted">${j.start||'—'}</td>
+      <td><span class="amt ${dayT>0?'amt-high':'amt-low'}">${fmt(dayT)}</span></td>
+      <td><span class="amt amt-mid">${fmt(allT)}</span></td>
+    </tr>`;
+  }).join('');
+}
+
+function openJobModal(id) {
+  editingJobId = id || null;
+  const modal = document.getElementById('jobModal');
+  document.getElementById('jobDeleteBtn').style.display = id ? 'inline-flex' : 'none';
+
+  // Populate customer select
+  const sel = document.getElementById('j-customer');
+  sel.innerHTML = '<option value="">Select…</option>' + DB.customers.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+
+  if (id) {
+    const j = DB.jobs.find(x=>x.id===id);
+    if (!j) return;
+    document.getElementById('jobModalTitle').textContent = j.name;
+    document.getElementById('j-name').value = j.name;
+    document.getElementById('j-customer').value = j.customer;
+    document.getElementById('j-type').value = j.type;
+    document.getElementById('j-status').value = j.status;
+    document.getElementById('j-coman').value = j.coman||'';
+    document.getElementById('j-coemail').value = j.coemail||'';
+    document.getElementById('j-state').value = j.state||'Texas';
+    document.getElementById('j-county').value = j.county||'';
+    document.getElementById('j-start').value = j.start||'';
+    document.getElementById('j-end').value = j.end||'';
+    document.getElementById('j-iron').value = j.iron||'';
+    document.getElementById('j-tank').value = j.tank||'';
+    document.getElementById('j-wells').value = j.wells||'';
+    document.getElementById('j-notes').value = j.notes||'';
+  } else {
+    document.getElementById('jobModalTitle').textContent = 'New Job';
+    ['j-name','j-coman','j-coemail','j-county','j-start','j-end','j-iron','j-tank','j-wells','j-notes'].forEach(id => document.getElementById(id).value='');
+    document.getElementById('j-state').value = 'Texas';
+    document.getElementById('j-customer').value = '';
+    document.getElementById('j-type').value = '';
+    document.getElementById('j-status').value = 'Active';
+  }
+
+  // Weekly view
+  currentWeekStart = getWeekStart(new Date());
+  renderWeekDays();
+  renderJobCrew();
+  switchMTab('job','info', document.querySelector('#jobModal .mtab'));
+  showModal('jobModal');
+}
+
+function saveJob() {
+  const name = document.getElementById('j-name').value.trim();
+  const cust = document.getElementById('j-customer').value;
+  const type = document.getElementById('j-type').value;
+  if (!name || !cust || !type) { toast('Please fill in required fields','error'); return; }
+  const data = {
+    name, customer:cust, type, status:document.getElementById('j-status').value,
+    coman:document.getElementById('j-coman').value,
+    coemail:document.getElementById('j-coemail').value,
+    state:document.getElementById('j-state').value,
+    county:document.getElementById('j-county').value,
+    start:document.getElementById('j-start').value,
+    end:document.getElementById('j-end').value,
+    iron:document.getElementById('j-iron').value,
+    tank:document.getElementById('j-tank').value,
+    wells:document.getElementById('j-wells').value,
+    notes:document.getElementById('j-notes').value
+  };
+  if (editingJobId) {
+    const idx = DB.jobs.findIndex(j=>j.id===editingJobId);
+    DB.jobs[idx] = {...DB.jobs[idx], ...data};
+    toast('Job updated','success');
+  } else {
+    const newJob = {id:uid(), ...data};
+    DB.jobs.push(newJob);
+    editingJobId = newJob.id;
+    toast('Job created','success');
+  }
+  saveDB(); renderAll(); closeModal('jobModal');
+}
+
+function deleteCurrentJob() {
+  if (!editingJobId) return;
+  if (!confirm('Delete this job and all its daily entries?')) return;
+  DB.jobs = DB.jobs.filter(j=>j.id!==editingJobId);
+  delete DB.jobCrew[editingJobId];
+  Object.keys(DB.dailyEntries).forEach(k => { if(k.startsWith(editingJobId+'_')) delete DB.dailyEntries[k]; });
+  saveDB(); renderAll(); closeModal('jobModal');
+  toast('Job deleted');
+}
+
+// ════════════════════════════════════
+//  DAILY COST EDITOR
+// ════════════════════════════════════
+function getWeekStart(d) {
+  const day = d.getDay();
+  const diff = d.getDate() - day + (day===0?-6:1);
+  return new Date(d.setDate(diff));
+}
+
+function prevWeek() { currentWeekStart = new Date(currentWeekStart.getTime() - 7*86400000); renderWeekDays(); }
+function nextWeek() { currentWeekStart = new Date(currentWeekStart.getTime() + 7*86400000); renderWeekDays(); }
+
+function renderWeekDays() {
+  const days = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  const today = todayStr();
+  let html = '';
+  const ws = new Date(currentWeekStart);
+  const we = new Date(ws.getTime() + 6*86400000);
+  document.getElementById('weekLabel').textContent =
+    ws.toLocaleDateString('en-US',{month:'short',day:'numeric'}) + ' – ' +
+    we.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(currentWeekStart.getTime() + i*86400000);
+    const ds = d.toISOString().split('T')[0];
+    const key = (editingJobId||'_') + '_' + ds;
+    const hasData = editingJobId && (DB.dailyEntries[key]||[]).length > 0;
+    const dayTotal = editingJobId ? getJobDayTotal(editingJobId, ds) : 0;
+    const isToday = ds === today;
+    html += `<div class="day-cell ${isToday?'today':''} ${hasData?'has-data':''}" onclick="openDayEditor('${ds}')">
+      <div class="day-label">${days[i]}</div>
+      <div class="day-num">${d.getDate()}</div>
+      ${hasData?`<div class="day-amt">${fmt(dayTotal)}</div>`:''}
+    </div>`;
+  }
+  document.getElementById('dayGrid').innerHTML = html;
+}
+
+function openDayEditor(dateStr) {
+  currentDayDate = dateStr;
+  const d = new Date(dateStr + 'T12:00:00');
+  document.getElementById('dayEditorTitle').textContent =
+    d.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
+  document.getElementById('dayEditor').style.display = 'block';
+  renderDayLineItems();
+}
+
+function renderDayLineItems() {
+  if (!editingJobId || !currentDayDate) return;
+  const key = editingJobId + '_' + currentDayDate;
+  const items = DB.dailyEntries[key] || [];
+  const div = document.getElementById('dayLineItems');
+  if (items.length === 0) {
+    div.innerHTML = '<div style="text-align:center;padding:20px;color:var(--grey-lt);font-size:13px;">No charges for this day. Add from price sheet or add custom.</div>';
+    document.getElementById('dayTotal').textContent = '$0';
+    return;
+  }
+  div.innerHTML = items.map((li,i) => `
+    <div class="li-row">
+      <input class="li-input" value="${li.desc||''}" onchange="updateLI(${i},'desc',this.value)" placeholder="Description">
+      <input class="li-input" type="number" value="${li.qty||1}" onchange="updateLI(${i},'qty',this.value)" min="0" style="text-align:center;">
+      <input class="li-input" type="number" value="${li.rate||0}" onchange="updateLI(${i},'rate',this.value)" placeholder="Rate">
+      <select class="li-input" onchange="updateLI(${i},'ownership',this.value)">
+        <option ${li.ownership==='Owned'?'selected':''}>Owned</option>
+        <option ${li.ownership==='Third Party'?'selected':''}>Third Party</option>
+      </select>
+      <input class="li-input" value="${li.vendor||''}" onchange="updateLI(${i},'vendor',this.value)" placeholder="Vendor / Notes">
+      <span style="font-family:'Montserrat',sans-serif;font-weight:700;color:var(--blue);font-size:13px;">${fmt((parseFloat(li.qty)||1)*(parseFloat(li.rate)||0))}</span>
+      <button class="li-del" onclick="removeLI(${i})">✕</button>
+    </div>`).join('');
+  const total = items.reduce((s,i)=>s+(parseFloat(i.qty)||1)*(parseFloat(i.rate)||0),0);
+  document.getElementById('dayTotal').textContent = fmt(total);
+}
+
+function updateLI(idx, field, val) {
+  const key = editingJobId + '_' + currentDayDate;
+  if (!DB.dailyEntries[key]) DB.dailyEntries[key] = [];
+  DB.dailyEntries[key][idx][field] = val;
+  const total = DB.dailyEntries[key].reduce((s,i)=>s+(parseFloat(i.qty)||1)*(parseFloat(i.rate)||0),0);
+  document.getElementById('dayTotal').textContent = fmt(total);
+}
+
+function removeLI(idx) {
+  const key = editingJobId + '_' + currentDayDate;
+  DB.dailyEntries[key].splice(idx,1);
+  renderDayLineItems();
+  renderWeekDays();
+}
+
+function addLineItemFromPrice() { showModal('pricePickModal'); renderPricePicker(''); }
+
+function renderPricePicker(q) {
+  const items = DB.prices.filter(p => !q || p.name.toLowerCase().includes(q.toLowerCase()));
+  document.getElementById('pricePickList').innerHTML = items.map(p => `
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:10px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .1s;" onmouseenter="this.style.background='var(--blue-lt)'" onmouseleave="this.style.background=''" onclick="pickPriceItem('${p.id}')">
+      <div>
+        <div style="font-weight:600;font-size:13px;">${p.name}</div>
+        <div style="font-size:11px;color:var(--grey-lt);">${p.cat} · <span class="badge ${p.own==='Owned'?'b-owned':'b-third'}">${p.own}</span>${p.vendor?' · '+p.vendor:''}</div>
+      </div>
+      <div style="font-family:'Montserrat',sans-serif;font-weight:700;color:var(--blue);">${fmt(p.rate)}</div>
+    </div>`).join('') || '<div style="padding:20px;text-align:center;color:var(--grey-lt);">No items found</div>';
+}
+
+function pickPriceItem(priceId) {
+  const p = DB.prices.find(x=>x.id===priceId);
+  if (!p) return;
+  const key = editingJobId + '_' + currentDayDate;
+  if (!DB.dailyEntries[key]) DB.dailyEntries[key] = [];
+  DB.dailyEntries[key].push({desc:p.name,qty:1,rate:p.rate,ownership:p.own,vendor:p.vendor||'',vendorRate:p.vrate||0});
+  closeModal('pricePickModal');
+  renderDayLineItems();
+  renderWeekDays();
+}
+
+function addCustomLineItem() {
+  const key = editingJobId + '_' + currentDayDate;
+  if (!DB.dailyEntries[key]) DB.dailyEntries[key] = [];
+  DB.dailyEntries[key].push({desc:'',qty:1,rate:0,ownership:'Owned',vendor:'',vendorRate:0});
+  renderDayLineItems();
+}
+
+function saveDayEntries() {
+  saveDB();
+  renderWeekDays();
+  renderAll();
+  toast('Day saved','success');
+}
+
+// ════════════════════════════════════
+//  AUTO-FILL MIDNIGHT
+// ════════════════════════════════════
+function scheduleAutoFill() {
+  checkAutoFill();
+  // Check every minute
+  setInterval(checkAutoFill, 60000);
+}
+
+function checkAutoFill() {
+  const now = new Date();
+  const today = now.toISOString().split('T')[0];
+  const lastRun = localStorage.getItem('ghsAutoFillDate');
+  if (lastRun === today) return; // already ran today
+
+  // Auto-fill today from yesterday for all active jobs
+  const yesterday = new Date(now.getTime() - 86400000).toISOString().split('T')[0];
+  DB.jobs.filter(j=>j.status==='Active').forEach(job => {
+    const todayKey = job.id + '_' + today;
+    const yestKey = job.id + '_' + yesterday;
+    if (!DB.dailyEntries[todayKey] && DB.dailyEntries[yestKey] && DB.dailyEntries[yestKey].length > 0) {
+      // Copy yesterday's entries to today
+      DB.dailyEntries[todayKey] = JSON.parse(JSON.stringify(DB.dailyEntries[yestKey]));
+    }
+  });
+  localStorage.setItem('ghsAutoFillDate', today);
+  saveDB();
+}
+
+// ════════════════════════════════════
+//  JOB CREW
+// ════════════════════════════════════
+function renderJobCrew() {
+  if (!editingJobId) { document.getElementById('jobCrewList').innerHTML = '<div style="color:var(--grey-lt);font-size:13px;padding:20px 0;">Save the job first to assign crew.</div>'; return; }
+  const crew = (DB.jobCrew[editingJobId]||[]).map(pid => getPerson(pid)).filter(Boolean);
+  if (crew.length === 0) {
+    document.getElementById('jobCrewList').innerHTML = '<div style="color:var(--grey-lt);font-size:13px;padding:20px 0;">No crew assigned yet.</div>';
+    return;
+  }
+  document.getElementById('jobCrewList').innerHTML = `<div class="tbl-wrap"><table><thead><tr><th>Name</th><th>Role</th><th>Type</th><th>Daily Rate / Hourly</th><th>Agency</th><th>Per Diem</th><th></th></tr></thead><tbody>` +
+    crew.map(p => `<tr>
+      <td><strong>${p.first} ${p.last}</strong></td>
+      <td class="cell-muted">${p.role||'—'}</td>
+      <td><span class="badge ${p.emptype==='W-2'?'b-w2':'b-contractor'}">${p.emptype}</span></td>
+      <td class="cell-muted">${p.emptype==='W-2'?'$'+(p.hourly||0)+'/hr':'$'+(p.daily||0)+'/day'}</td>
+      <td class="cell-muted">${p.agency||'—'}</td>
+      <td class="cell-muted">${p.emptype==='W-2'?(p.perdiem||'—'):'—'}</td>
+      <td><button class="btn btn-danger btn-sm" onclick="removeCrewMember('${p.id}')">Remove</button></td>
+    </tr>`).join('') +
+    '</tbody></table></div>';
+}
+
+function assignCrewModal() {
+  document.getElementById('assignSearch').value = '';
+  renderAssignList('');
+  showModal('assignModal');
+}
+
+function renderAssignList(q) {
+  const assigned = new Set(DB.jobCrew[editingJobId]||[]);
+  const filtered = DB.personnel.filter(p => !q || `${p.first} ${p.last} ${p.role}`.toLowerCase().includes(q.toLowerCase()));
+  document.getElementById('assignList').innerHTML = filtered.map(p => {
+    const isOn = assigned.has(p.id);
+    return `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px;border-bottom:1px solid var(--border);">
+      <div>
+        <div style="font-weight:600;">${p.first} ${p.last}</div>
+        <div style="font-size:11px;color:var(--grey-lt);">${p.role||''} · <span class="badge ${p.emptype==='W-2'?'b-w2':'b-contractor'}">${p.emptype}</span></div>
+      </div>
+      <button class="btn ${isOn?'btn-danger':'btn-green'} btn-sm" onclick="toggleCrewAssign('${p.id}',this)">
+        ${isOn?'Remove':'Assign'}
+      </button>
+    </div>`;
+  }).join('') || '<div style="padding:20px;text-align:center;color:var(--grey-lt);">No personnel found</div>';
+}
+
+function toggleCrewAssign(personId, btn) {
+  if (!DB.jobCrew[editingJobId]) DB.jobCrew[editingJobId] = [];
+  const idx = DB.jobCrew[editingJobId].indexOf(personId);
+  if (idx > -1) {
+    DB.jobCrew[editingJobId].splice(idx,1);
+    btn.textContent = 'Assign'; btn.className = 'btn btn-green btn-sm';
+  } else {
+    DB.jobCrew[editingJobId].push(personId);
+    btn.textContent = 'Remove'; btn.className = 'btn btn-danger btn-sm';
+  }
+  saveDB(); renderJobCrew();
+}
+
+function removeCrewMember(personId) {
+  if (!DB.jobCrew[editingJobId]) return;
+  DB.jobCrew[editingJobId] = DB.jobCrew[editingJobId].filter(id=>id!==personId);
+  saveDB(); renderJobCrew();
+}
+
+// ════════════════════════════════════
+//  PERSONNEL
+// ════════════════════════════════════
+function setPFilter(val, el) {
+  personFilter = val;
+  document.querySelectorAll('[data-pf]').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  renderPersonnel();
+}
+
+function renderPersonnel() {
+  const q = (document.getElementById('personSearch')?.value||'').toLowerCase();
+  let people = DB.personnel.filter(p => {
+    if (personFilter !== 'all' && p.emptype !== personFilter) return false;
+    if (q && !`${p.first} ${p.last} ${p.role}`.toLowerCase().includes(q)) return false;
+    return true;
+  });
+  const grid = document.getElementById('personGrid');
+  if (people.length === 0) {
+    grid.innerHTML = `<div class="empty" style="grid-column:1/-1;"><div class="empty-icon">👷</div><div class="empty-text">No Personnel</div><div class="empty-sub">Add your crew to get started</div></div>`;
+    return;
+  }
+  grid.innerHTML = people.map(p => `
+    <div class="person-card" onclick="openPersonModal('${p.id}')">
+      <div class="person-card-hdr">
+        <div class="person-avatar">${initials(p)}</div>
+        <div>
+          <div class="person-name">${p.first} ${p.last}</div>
+          <div class="person-role">${p.role||'—'} · <span class="badge ${p.emptype==='W-2'?'b-w2':'b-contractor'}" style="font-size:9px;">${p.emptype}</span></div>
+        </div>
+      </div>
+      <div class="person-body">
+        <div class="person-row"><span class="pr-k">Phone</span><span class="pr-v">${p.phone||'—'}</span></div>
+        <div class="person-row"><span class="pr-k">${p.emptype==='W-2'?'Hourly':'Daily Rate'}</span><span class="pr-v">${p.emptype==='W-2'?'$'+(p.hourly||0)+'/hr':'$'+(p.daily||0)+'/day'}</span></div>
+        ${p.emptype==='W-2'?`<div class="person-row"><span class="pr-k">Per Diem</span><span class="pr-v">${p.perdiem||'—'} ${p.perdiemamt?'($'+p.perdiemamt+'/day)':''}</span></div>`:''}
+        ${p.emptype==='Contractor'?`<div class="person-row"><span class="pr-k">Agency</span><span class="pr-v">${p.agency||'—'}</span></div>`:''}
+      </div>
+    </div>`).join('');
+}
+
+function openPersonModal(id) {
+  editingPersonId = id||null;
+  document.getElementById('personDeleteBtn').style.display = id?'inline-flex':'none';
+  if (id) {
+    const p = getPerson(id);
+    if (!p) return;
+    document.getElementById('personModalTitle').textContent = p.first+' '+p.last;
+    document.getElementById('p-first').value = p.first||'';
+    document.getElementById('p-last').value = p.last||'';
+    document.getElementById('p-role').value = p.role||'';
+    document.getElementById('p-phone').value = p.phone||'';
+    document.getElementById('p-email').value = p.email||'';
+    document.getElementById('p-emptype').value = p.emptype||'';
+    document.getElementById('p-hourly').value = p.hourly||'';
+    document.getElementById('p-perdiem').value = p.perdiem||'';
+    document.getElementById('p-perdiemamt').value = p.perdiemamt||'';
+    document.getElementById('p-daily').value = p.daily||'';
+    document.getElementById('p-agency').value = p.agency||'';
+    document.getElementById('p-emergency').value = p.emergency||'';
+    document.getElementById('p-notes').value = p.notes||'';
+  } else {
+    document.getElementById('personModalTitle').textContent = 'Add Person';
+    ['p-first','p-last','p-role','p-phone','p-email','p-hourly','p-perdiemamt','p-daily','p-emergency','p-notes'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('p-emptype').value='';
+    document.getElementById('p-perdiem').value='';
+    document.getElementById('p-agency').value='';
+  }
+  toggleEmpFields();
+  showModal('personModal');
+}
+
+function toggleEmpFields() {
+  const type = document.getElementById('p-emptype').value;
+  const show = (id, visible) => document.getElementById(id).style.display = visible ? 'flex' : 'none';
+  show('pf-hourly', type==='W-2');
+  show('pf-perdiem', type==='W-2');
+  show('pf-perdiemamt', type==='W-2');
+  show('pf-daily', type==='Contractor');
+  show('pf-agency', type==='Contractor');
+}
+
+function savePerson() {
+  const first = document.getElementById('p-first').value.trim();
+  const last = document.getElementById('p-last').value.trim();
+  const emptype = document.getElementById('p-emptype').value;
+  if (!first || !last || !emptype) { toast('Name and type required','error'); return; }
+  const data = {
+    first, last,
+    role: document.getElementById('p-role').value,
+    phone: document.getElementById('p-phone').value,
+    email: document.getElementById('p-email').value,
+    emptype,
+    hourly: parseFloat(document.getElementById('p-hourly').value)||0,
+    perdiem: document.getElementById('p-perdiem').value,
+    perdiemamt: parseFloat(document.getElementById('p-perdiemamt').value)||0,
+    daily: parseFloat(document.getElementById('p-daily').value)||0,
+    agency: document.getElementById('p-agency').value,
+    emergency: document.getElementById('p-emergency').value,
+    notes: document.getElementById('p-notes').value
+  };
+  if (editingPersonId) {
+    const idx = DB.personnel.findIndex(p=>p.id===editingPersonId);
+    DB.personnel[idx] = {...DB.personnel[idx],...data};
+    toast('Person updated','success');
+  } else {
+    DB.personnel.push({id:uid(),...data});
+    toast('Person added','success');
+  }
+  saveDB(); renderPersonnel(); closeModal('personModal');
+}
+
+function deleteCurrentPerson() {
+  if (!editingPersonId) return;
+  if (!confirm('Remove this person?')) return;
+  DB.personnel = DB.personnel.filter(p=>p.id!==editingPersonId);
+  Object.keys(DB.jobCrew).forEach(jid => {
+    DB.jobCrew[jid] = DB.jobCrew[jid].filter(id=>id!==editingPersonId);
+  });
+  saveDB(); renderPersonnel(); closeModal('personModal');
+  toast('Person removed');
+}
+
+// ════════════════════════════════════
+//  PERSONNEL IMPORT
+// ════════════════════════════════════
+function openPersonnelImport() { showModal('importModal'); }
+
+function runImport() {
+  const raw = document.getElementById('importData').value.trim();
+  if (!raw) { toast('No data to import','error'); return; }
+  const lines = raw.split('\n').map(l=>l.trim()).filter(Boolean);
+  let added = 0;
+  lines.forEach((line, i) => {
+    if (i===0 && line.toLowerCase().includes('first')) return; // skip header
+    const cols = line.split(/[,\t]/).map(c=>c.trim());
+    if (cols.length < 4) return;
+    const [first, last, role, phone, email, emptype, rate, agency] = cols;
+    if (!first || !last) return;
+    const isW2 = (emptype||'').toLowerCase().includes('w');
+    DB.personnel.push({
+      id: uid(), first, last, role:role||'', phone:phone||'', email:email||'',
+      emptype: isW2?'W-2':'Contractor',
+      hourly: isW2?parseFloat(rate)||0:0,
+      perdiem:'', perdiemamt:0,
+      daily: !isW2?parseFloat(rate)||0:0,
+      agency: agency||'', emergency:'', notes:''
+    });
+    added++;
+  });
+  saveDB(); renderPersonnel(); closeModal('importModal');
+  toast(`Imported ${added} person(s)`, 'success');
+}
+
+// ════════════════════════════════════
+//  PRICE SHEET
+// ════════════════════════════════════
+function renderPriceSheet() {
+  const tbody = document.getElementById('priceBody');
+  if (DB.prices.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:40px;color:var(--grey-lt);">No items in price sheet</td></tr>';
+    return;
+  }
+  tbody.innerHTML = DB.prices.map(p => {
+    const markup = p.vrate > 0 ? Math.round(((p.rate - p.vrate) / p.vrate) * 100) : 0;
+    return `<tr onclick="openPriceModal('${p.id}')">
+      <td><strong>${p.name}</strong></td>
+      <td class="cell-muted">${p.cat}</td>
+      <td><span class="amt amt-high">${fmt(p.rate)}</span></td>
+      <td><span class="badge ${p.own==='Owned'?'b-owned':'b-third'}">${p.own}</span></td>
+      <td class="cell-muted">${p.vendor||'—'}</td>
+      <td class="cell-muted">${p.vrate>0?fmt(p.vrate):'—'}</td>
+      <td class="cell-muted">${p.vrate>0?markup+'%':'—'}</td>
+      <td><button class="btn btn-outline btn-sm" onclick="event.stopPropagation();openPriceModal('${p.id}')">Edit</button></td>
+    </tr>`;
+  }).join('');
+}
+
+function openPriceModal(id) {
+  editingPriceId = id||null;
+  document.getElementById('priceDeleteBtn').style.display = id?'inline-flex':'none';
+  if (id) {
+    const p = DB.prices.find(x=>x.id===id);
+    document.getElementById('priceModalTitle').textContent = p.name;
+    document.getElementById('pr-name').value = p.name;
+    document.getElementById('pr-cat').value = p.cat;
+    document.getElementById('pr-rate').value = p.rate;
+    document.getElementById('pr-own').value = p.own;
+    document.getElementById('pr-vendor').value = p.vendor||'';
+    document.getElementById('pr-vrate').value = p.vrate||'';
+    document.getElementById('pr-notes').value = p.notes||'';
+  } else {
+    document.getElementById('priceModalTitle').textContent = 'Add Price Item';
+    ['pr-name','pr-rate','pr-vendor','pr-vrate','pr-notes'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('pr-cat').value = 'Labor';
+    document.getElementById('pr-own').value = 'Owned';
+  }
+  togglePriceVendor();
+  showModal('priceModal');
+}
+
+function togglePriceVendor() {
+  const tp = document.getElementById('pr-own').value === 'Third Party';
+  ['prf-vendor','prf-vrate'].forEach(id => document.getElementById(id).style.display = tp?'flex':'none');
+}
+
+function savePrice() {
+  const name = document.getElementById('pr-name').value.trim();
+  const rate = parseFloat(document.getElementById('pr-rate').value);
+  if (!name || isNaN(rate)) { toast('Name and rate required','error'); return; }
+  const data = {
+    name, cat:document.getElementById('pr-cat').value,
+    rate, own:document.getElementById('pr-own').value,
+    vendor:document.getElementById('pr-vendor').value,
+    vrate:parseFloat(document.getElementById('pr-vrate').value)||0,
+    notes:document.getElementById('pr-notes').value
+  };
+  if (editingPriceId) {
+    const idx = DB.prices.findIndex(p=>p.id===editingPriceId);
+    DB.prices[idx] = {...DB.prices[idx],...data};
+    toast('Item updated','success');
+  } else {
+    DB.prices.push({id:uid(),...data});
+    toast('Item added','success');
+  }
+  saveDB(); renderPriceSheet(); closeModal('priceModal');
+}
+
+function deleteCurrentPrice() {
+  if (!editingPriceId) return;
+  DB.prices = DB.prices.filter(p=>p.id!==editingPriceId);
+  saveDB(); renderPriceSheet(); closeModal('priceModal');
+  toast('Item removed');
+}
+
+// ════════════════════════════════════
+//  CUSTOMERS
+// ════════════════════════════════════
+function renderCustomers() {
+  const tbody = document.getElementById('custBody');
+  if (DB.customers.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--grey-lt);">No customers yet</td></tr>';
+    return;
+  }
+  tbody.innerHTML = DB.customers.map(c => {
+    const activeJobs = DB.jobs.filter(j=>j.customer===c.id&&j.status==='Active').length;
+    const totalRev = DB.jobs.filter(j=>j.customer===c.id).reduce((s,j)=>s+getJobTotalAll(j.id),0);
+    return `<tr onclick="openCustModal('${c.id}')">
+      <td><strong>${c.name}</strong></td>
+      <td class="cell-muted">${c.contact||'—'}</td>
+      <td class="cell-muted">${c.phone||'—'}</td>
+      <td class="cell-muted">${c.email||'—'}</td>
+      <td>${activeJobs} active</td>
+      <td><span class="amt amt-high">${fmt(totalRev)}</span></td>
+    </tr>`;
+  }).join('');
+}
+
+function openCustModal(id) {
+  editingCustId = id||null;
+  document.getElementById('custDeleteBtn').style.display = id?'inline-flex':'none';
+  if (id) {
+    const c = DB.customers.find(x=>x.id===id);
+    document.getElementById('custModalTitle').textContent = c.name;
+    document.getElementById('c-name').value = c.name;
+    document.getElementById('c-contact').value = c.contact||'';
+    document.getElementById('c-phone').value = c.phone||'';
+    document.getElementById('c-email').value = c.email||'';
+    document.getElementById('c-addr').value = c.addr||'';
+    document.getElementById('c-notes').value = c.notes||'';
+  } else {
+    document.getElementById('custModalTitle').textContent = 'Add Customer';
+    ['c-name','c-contact','c-phone','c-email','c-addr','c-notes'].forEach(id=>document.getElementById(id).value='');
+  }
+  showModal('custModal');
+}
+
+function saveCust() {
+  const name = document.getElementById('c-name').value.trim();
+  if (!name) { toast('Company name required','error'); return; }
+  const data = {name, contact:document.getElementById('c-contact').value, phone:document.getElementById('c-phone').value,
+    email:document.getElementById('c-email').value, addr:document.getElementById('c-addr').value, notes:document.getElementById('c-notes').value};
+  if (editingCustId) {
+    const idx = DB.customers.findIndex(c=>c.id===editingCustId);
+    DB.customers[idx] = {...DB.customers[idx],...data};
+    toast('Customer updated','success');
+  } else {
+    DB.customers.push({id:uid(),...data});
+    toast('Customer added','success');
+  }
+  saveDB(); renderCustomers(); renderAll(); closeModal('custModal');
+}
+
+function deleteCurrentCust() {
+  if (!editingCustId) return;
+  if (!confirm('Delete this customer?')) return;
+  DB.customers = DB.customers.filter(c=>c.id!==editingCustId);
+  saveDB(); renderCustomers(); closeModal('custModal');
+  toast('Customer removed');
+}
+
+// ════════════════════════════════════
+//  MODAL HELPERS
+// ════════════════════════════════════
+function showModal(id) {
+  document.getElementById(id).style.display = 'flex';
+  document.getElementById('mainOverlay').classList.add('open');
+}
+
+function closeModal(id) {
+  document.getElementById(id).style.display = 'none';
+  // Only close overlay if no other modals open
+  const anyOpen = ['jobModal','personModal','priceModal','custModal','assignModal','pricePickModal','importModal']
+    .some(m => document.getElementById(m).style.display !== 'none');
+  if (!anyOpen) document.getElementById('mainOverlay').classList.remove('open');
+}
+
+function closeAllModals() {
+  ['jobModal','personModal','priceModal','custModal','assignModal','pricePickModal','importModal']
+    .forEach(m => document.getElementById(m).style.display = 'none');
+  document.getElementById('mainOverlay').classList.remove('open');
+}
+
+function switchMTab(group, tab, el) {
+  document.querySelectorAll(`#${group}Modal .mtab`).forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll(`#${group}Modal .mtab-page`).forEach(p=>p.classList.remove('active'));
+  if (el) el.classList.add('active');
+  document.getElementById(`${group}-tab-${tab}`).classList.add('active');
+  if (tab==='daily') { currentWeekStart = getWeekStart(new Date()); renderWeekDays(); }
+  if (tab==='crew') renderJobCrew();
+}
+
+// ════════════════════════════════════
+//  EXPORT / IMPORT
+// ════════════════════════════════════
+function exportData() {
+  const json = JSON.stringify(DB, null, 2);
+  const blob = new Blob([json], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'ghs_ops_' + todayStr() + '.json';
+  a.click();
+  toast('Data exported','success');
+}
+
+function showImport() {
+  const input = document.createElement('input');
+  input.type = 'file'; input.accept = '.json';
+  input.onchange = e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      try {
+        const data = JSON.parse(ev.target.result);
+        Object.assign(DB, data);
+        saveDB(); renderAll();
+        toast('Data imported','success');
+      } catch(err) { toast('Invalid file','error'); }
+    };
+    reader.readAsText(file);
+  };
+  input.click();
+}
+
+// ════════════════════════════════════
+//  BOOT
+// ════════════════════════════════════
+init();
+</script>
+</body>
+</html>
