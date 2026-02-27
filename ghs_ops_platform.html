@@ -11,14 +11,14 @@
   --black:#111; --dark:#1e2428; --grey:#4a5568; --grey-lt:#8a9ab0;
   --border:#d4dde6; --bg:#f2f5f8; --white:#fff;
   --green:#2e9e68; --green-lt:#e6f7ef; --red:#d94f4f; --red-lt:#fdeaea;
-  --amber:#e8a020; --amber-lt:#fdf3e3;h
+  --amber:#e8a020; --amber-lt:#fdf3e3;
 }
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'Open Sans',sans-serif;background:var(--bg);color:var(--dark);min-height:100vh;font-size:14px;}
 
 /* ── LAYOUT ── */
 .app{display:flex;flex-direction:column;height:100vh;}
-.topbar{background:var(--black);height:60px;display:flex;align-items:center;justify-content:space-between;padding:0 24px;flex-shrink:0;z-index:200;}
+.topbar{background:var(--black);height:80px;display:flex;align-items:center;justify-content:space-between;padding:0 28px;flex-shrink:0;z-index:200;}
 .accent-line{height:3px;background:linear-gradient(90deg,var(--blue),#6dbee8);flex-shrink:0;}
 .main-layout{display:flex;flex:1;overflow:hidden;}
 .sidebar{width:220px;background:var(--dark);flex-shrink:0;display:flex;flex-direction:column;overflow-y:auto;}
@@ -132,7 +132,7 @@ tbody tr:hover{background:var(--blue-lt);}
 .modal-foot{padding:16px 24px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:10px;flex-shrink:0;background:#fafbfc;}
 
 /* ── FORM ── */
-.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.form-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;}
 .form-grid.cols3{grid-template-columns:1fr 1fr 1fr;}
 .form-group{display:flex;flex-direction:column;gap:5px;}
 .form-group.full{grid-column:1/-1;}
@@ -222,6 +222,11 @@ canvas{max-width:100%;}
 .two-col{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
 .three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;}
 hr.divider{border:none;border-top:1px solid var(--border);margin:16px 0;}
+
+/* ── DASHBOARD WATERMARK ── */
+#page-dashboard{position:relative;}
+.dash-watermark{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none;z-index:0;display:flex;align-items:center;user-select:none;}
+.dash-watermark img{width:800px;height:auto;opacity:0.07;filter:invert(1) brightness(0);}
 </style>
 </head>
 <body>
@@ -230,7 +235,7 @@ hr.divider{border:none;border-top:1px solid var(--border);margin:16px 0;}
   <!-- TOPBAR -->
   <div class="topbar">
     <div class="logo-wrap">
-      <div class="logo-box">GHS</div>
+      <img id="header-logo-img" style="height:62px;width:auto;filter:brightness(0) invert(1);opacity:0.95;flex-shrink:0;" alt="GHS Energy Logo">
       <div>
         <div class="logo-name">GHS Energy</div>
         <div class="logo-sub">Operations Platform</div>
@@ -262,6 +267,7 @@ hr.divider{border:none;border-top:1px solid var(--border);margin:16px 0;}
 
       <!-- ═══════════ DASHBOARD ═══════════ -->
       <div id="page-dashboard" class="page active">
+        <div class="dash-watermark"><img id="dash-watermark-img" alt="GHS Energy Logo"></div>
         <div class="page-title">Company Dashboard</div>
         <div class="page-sub" id="dashDate">Loading...</div>
         <div class="stat-grid" id="dashStats">
@@ -280,10 +286,15 @@ hr.divider{border:none;border-top:1px solid var(--border);margin:16px 0;}
             <canvas id="pieCanvas" width="200" height="200"></canvas>
             <div class="pie-legend" id="pieLegend"></div>
           </div>
+          <div class="dash-card" id="jobTypeCard">
+            <div class="dash-card-title">Jobs by Type</div>
+            <canvas id="typePieCanvas" width="200" height="200"></canvas>
+            <div class="pie-legend" id="typePieLegend"></div>
+          </div>
         </div>
         <div class="tbl-wrap">
           <div style="padding:16px 16px 8px"><div class="sec-title">Active Jobs Summary</div></div>
-          <table><thead><tr><th>Job</th><th>Customer</th><th>Type</th><th>Today's Charges</th><th>Total to Date</th><th>Personnel</th><th>Status</th></tr></thead>
+          <table><thead><tr><th>Job</th><th>Customer</th><th>Type</th><th>Today's Charges</th><th>Total to Date</th><th>Margins</th><th>Personnel</th><th>Status</th></tr></thead>
           <tbody id="dashJobsBody"></tbody></table>
         </div>
       </div>
@@ -638,6 +649,14 @@ function loadDB() {
 function init() {
   loadDB();
   if (DB.customers.length === 0) seedData();
+  // Load logo from localStorage if saved
+  const savedLogo = localStorage.getItem('ghsLogoDataUrl');
+  if (savedLogo) {
+    const hdr = document.getElementById('header-logo-img');
+    if (hdr) hdr.src = savedLogo;
+    const wm = document.getElementById('dash-watermark-img');
+    if (wm) wm.src = savedLogo;
+  }
   document.getElementById('topDate').textContent = new Date().toLocaleDateString('en-US',{weekday:'short',year:'numeric',month:'short',day:'numeric'});
   document.getElementById('dashDate').textContent = 'As of ' + new Date().toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
   renderAll();
@@ -745,6 +764,19 @@ function getJobTotalAll(jobId) {
 
 function getJobCrewCount(jobId) { return (DB.jobCrew[jobId]||[]).length; }
 
+function getJobDayMargin(jobId, dateStr) {
+  const key = jobId + '_' + dateStr;
+  const items = DB.dailyEntries[key] || [];
+  let revenue = 0, vendorCost = 0;
+  items.forEach(i => {
+    const qty = parseFloat(i.qty) || 1;
+    const rate = parseFloat(i.rate) || 0;
+    revenue += qty * rate;
+    if (i.ownership === 'Third Party') vendorCost += qty * (parseFloat(i.vendorRate) || 0);
+  });
+  return revenue - vendorCost;
+}
+
 function statusBadge(s) {
   const map = {Active:'b-active',Upcoming:'b-upcoming',Complete:'b-complete'};
   return `<span class="badge ${map[s]||''}"><span class="b-dot"></span>${s}</span>`;
@@ -758,7 +790,7 @@ function typeBadge(t) {
 // ════════════════════════════════════
 //  NAV
 // ════════════════════════════════════
-function navTo(page, el) { closeAllModals();
+function navTo(page, el) { closeAllModals(); closeAllModals();
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   document.getElementById('page-' + page).classList.add('active');
@@ -834,16 +866,24 @@ function renderDashboard() {
   if (activeAll.length === 0) {
     tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:30px;color:var(--grey-lt);">No active jobs</td></tr>';
   } else {
-    tbody.innerHTML = activeAll.map(j => `<tr onclick="openJobFromDash('${j.id}')">
+    tbody.innerHTML = activeAll.map(j => {
+    const dayTotal = getJobDayTotal(j.id, today);
+    const allTotal = getJobTotalAll(j.id);
+    const margin = getJobDayMargin(j.id, today);
+    const mc = margin > 0 ? 'var(--green)' : margin < 0 ? 'var(--red)' : 'var(--grey-lt)';
+    return `<tr onclick="openJobFromDash('${j.id}')">
       <td><span class="cell-name">${j.name}</span></td>
       <td>${getCust(j.customer).name}</td>
       <td>${typeBadge(j.type)}</td>
-      <td><span class="amt amt-high">${fmt(getJobDayTotal(j.id,today))}</span></td>
-      <td><span class="amt amt-mid">${fmt(getJobTotalAll(j.id))}</span></td>
+      <td><span class="amt amt-high">${fmt(dayTotal)}</span></td>
+      <td><span class="amt amt-mid">${fmt(allTotal)}</span></td>
+      <td><span class="amt" style="color:${mc};font-family:'Montserrat',sans-serif;font-weight:800;font-size:14px;">${fmt(margin)}</span></td>
       <td>${getJobCrewCount(j.id)} crew</td>
       <td>${statusBadge(j.status)}</td>
-    </tr>`).join('');
+    </tr>`;
+  }).join('');
   }
+  drawTypePie();
 }
 
 function openJobFromDash(id) {
@@ -883,6 +923,40 @@ function drawPie(data) {
   document.getElementById('pieLegend').innerHTML = entries.map(([name,val],i) =>
     `<div class="pie-leg-row"><div class="pie-dot" style="background:${COLORS[i%COLORS.length]}"></div><span style="flex:1">${name}</span><strong>${fmt(val)}</strong></div>`
   ).join('');
+}
+
+function drawTypePie() {
+  const canvas = document.getElementById('typePieCanvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  canvas.width = 200; canvas.height = 200;
+  ctx.clearRect(0, 0, 200, 200);
+  const activeJobs = DB.jobs.filter(j => j.status === 'Active');
+  const typeCounts = {};
+  activeJobs.forEach(j => { typeCounts[j.type] = (typeCounts[j.type] || 0) + 1; });
+  const TYPE_COLORS = {'Production':'#5070cc','Completions':'#7050cc','Pumper Routes':'#309960'};
+  const entries = Object.entries(typeCounts);
+  const total = entries.reduce((s,[,v]) => s + v, 0);
+  if (total === 0) {
+    ctx.fillStyle='#e2e8f0'; ctx.beginPath(); ctx.arc(100,100,90,0,Math.PI*2); ctx.fill();
+    document.getElementById('typePieLegend').innerHTML='<div style="font-size:12px;color:var(--grey-lt);text-align:center;">No active jobs</div>';
+    return;
+  }
+  let startAngle = -Math.PI/2;
+  entries.forEach(([type,count]) => {
+    const slice = (count/total)*Math.PI*2;
+    ctx.beginPath(); ctx.moveTo(100,100);
+    ctx.arc(100,100,90,startAngle,startAngle+slice);
+    ctx.closePath();
+    ctx.fillStyle = TYPE_COLORS[type]||'#3a9fd6';
+    ctx.fill(); ctx.strokeStyle='#fff'; ctx.lineWidth=2; ctx.stroke();
+    startAngle += slice;
+  });
+  ctx.beginPath(); ctx.arc(100,100,50,0,Math.PI*2); ctx.fillStyle='#fff'; ctx.fill();
+  document.getElementById('typePieLegend').innerHTML = entries.map(([type,count]) => {
+    const pct = Math.round((count/total)*100);
+    return `<div class="pie-leg-row"><div class="pie-dot" style="background:${TYPE_COLORS[type]||'#3a9fd6'}"></div><span style="flex:1">${type}</span><strong>${count} job${count!==1?'s':''} &nbsp;·&nbsp; ${pct}%</strong></div>`;
+  }).join('');
 }
 
 // ════════════════════════════════════
