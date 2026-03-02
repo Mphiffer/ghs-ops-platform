@@ -757,7 +757,7 @@ function renderPersonnelReport() {
     const job = getPersonJob(p.id);
     const statusCls = job ? 'color:var(--green);font-weight:700;' : 'color:var(--red);font-weight:700;';
     const statusTxt = job ? '● Active' : '● Inactive';
-    const rate = p.emptype === 'W-2' ? '
+    const rate = p.emptype === 'W-2' ? '$'+(p.hourly||0)+'/hr' : '$'+(p.daily||0)+'/day';
   loadDB();
   if (DB.customers.length === 0) seedData();
   // Load logo from localStorage if saved
@@ -4892,7 +4892,7 @@ function exportRptCSV() {
   const headers = ['Name','Role','Type','Status','Job Site','County','State','Rate','Phone','Email','Emergency','Notes'];
   const rows = people.map(p => {
     const job = getPersonJob(p.id);
-    const rate = p.emptype === 'W-2' ? '
+    const rate = p.emptype === 'W-2' ? '$'+(p.hourly||0)+'/hr' : '$'+(p.daily||0)+'/day';
   loadDB();
   if (DB.customers.length === 0) seedData();
   // Load logo from localStorage if saved
